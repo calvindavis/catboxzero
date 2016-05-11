@@ -3,7 +3,7 @@
 
 	"name": "Catbox Zero",
 	"description": "Reward yourself for your empty inbox with a fun cat GIF!",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"permissions": ["storage"],
 
 	"content_scripts": [

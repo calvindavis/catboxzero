@@ -1,8 +1,4 @@
-const img = document.createElement("img");
-img.style.width = "auto";
-img.style.maxHeight = "300px";
-img.style.marginTop = "1em";
-let element = null;
+let elements = new Map();
 
 /**
  * @param {string} tag
@@ -31,30 +27,49 @@ const getOptions = () => {
 };
 
 /**
- * @param {HTMLElement} el
- * @param {string} tag
+ * @returns {Promise}
  */
-const appendRandomGif = (el) => {
-	getOptions().then((options) => {
-		getRandomGifUrl(options.tag, options.rating).then((url) => {
-			img.src = url;
-			el.appendChild(document.createElement("br"));
-			el.appendChild(img);
+const createRandomGif = () => {
+	return new Promise((resolve, reject) => {
+		getOptions().then((options) => {
+			getRandomGifUrl(options.tag, options.rating).then((url) => {
+				const img = createImageElement(url);
+				resolve(img);
+			});
 		});
 	});
 };
 
-const observer = new MutationObserver(function (mutations) {
-	const el = document.querySelector(".TC");
+/**
+ * @param {string} src
+ * @returns {HTMLImageElement}
+ */
+const createImageElement = (src) => {
+	const img = document.createElement("img");
+	img.src = src;
+	img.style.width = "auto";
+	img.style.maxHeight = "300px";
+	img.style.marginTop = "1em";
+	return img;
+};
 
-	if (el !== null) {
-		if (element === null) {
-			element = el;
-			appendRandomGif(element);
+const observer = new MutationObserver(function (mutations) {
+	const els = Array.prototype.slice.call(document.querySelectorAll(".TC"));
+
+	els.forEach((el) => {
+		if (elements.has(el)) {
+			// TODO Update image everytime el is hidden and then reappears.
+		} else {
+			// Setting a value here to prevent this being fired multiple times.
+			elements.set(el, null);
+
+			createRandomGif().then((img) => {
+				el.appendChild(document.createElement("br"));
+				el.appendChild(img);
+				elements.set(el, img);
+			});
 		}
-	} else {
-		element = null;
-	}
+	});
 });
 
 observer.observe(document.documentElement, {
