@@ -1,4 +1,4 @@
-let elements = new Map();
+let gifs = new Map();
 
 /**
  * @param {string} tag
@@ -27,46 +27,81 @@ const getOptions = () => {
 };
 
 /**
- * @returns {Promise}
+ * @param {String} url
+ * @returns {HTMLImageElement}
  */
-const createRandomGif = () => {
-	return new Promise((resolve, reject) => {
-		getOptions().then((options) => {
-			getRandomGifUrl(options.tag, options.rating).then((url) => {
-				const img = createImageElement(url);
-				resolve(img);
-			});
+const createImage = (url) => {
+	let img = document.createElement("img");
+
+	img.src = url;
+	img.style.width = "auto";
+	img.style.maxHeight = "300px";
+	img.style.marginTop = "1em";
+
+	return img;
+};
+
+/**
+ * @param {HTMLElement} element
+ * @returns {Promise<HTMLImageElement>}
+ */
+const createImageFromGiphy = (element) => {
+	return getOptions().then((options) => {
+		return getRandomGifUrl(options.tag, options.rating).then((url) => {
+			return createImage(url);
 		});
 	});
 };
 
 /**
- * @param {string} src
- * @returns {HTMLImageElement}
+ * @param {HTMLElement} element
+ * @returns {Promise<HTMLImageElement>}
  */
-const createImageElement = (src) => {
-	const img = document.createElement("img");
-	img.src = src;
-	img.style.width = "auto";
-	img.style.maxHeight = "300px";
-	img.style.marginTop = "1em";
-	return img;
+const appendRandomGif = (element) => {
+	if(gifs.has(element)) {
+		const gif = gifs.get(element);
+
+		if(gif && gif.promise) {
+			Promise.reject(gif.promise);
+
+			delete gif.promise;
+		}
+	}
+
+	return createImageFromGiphy(element).then((image) => {
+		let span = document.createElement("span");
+		span.dataset["giffy"] = "true";
+
+		span.appendChild(document.createElement("br"));
+		span.appendChild(image);
+
+		element.appendChild(span);
+
+		return image;
+	});
 };
 
-const observer = new MutationObserver(function (mutations) {
-	const els = Array.prototype.slice.call(document.querySelectorAll(".TC"));
+const observer = new MutationObserver((mutations) => {
+	const elements = Array.prototype.slice.call(document.querySelectorAll(".TC"));
 
-	els.forEach((el) => {
-		if (elements.has(el)) {
-			// TODO Update image everytime el is hidden and then reappears.
-		} else {
-			// Setting a value here to prevent this being fired multiple times.
-			elements.set(el, null);
+	elements.forEach((element) => {
+		if(element.offsetParent === null) {
+			const image = element.querySelector("[data-giffy]");
 
-			createRandomGif().then((img) => {
-				el.appendChild(document.createElement("br"));
-				el.appendChild(img);
-				elements.set(el, img);
+			if(image && gifs.has(element)) {
+				image.remove();
+
+				gifs.delete(element);
+			}
+		}
+
+		if(!gifs.has(element)) {
+			const promise = appendRandomGif(element);
+
+			gifs.set(element, { promise });
+
+			promise.then((image) => {
+				gifs.set(element, { image });
 			});
 		}
 	});
