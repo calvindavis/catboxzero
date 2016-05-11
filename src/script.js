@@ -2,14 +2,15 @@ let gifs = new Map();
 
 /**
  * @param {string} tag
- * @returns {Promise}
+ * @param {string} rating
+ * @returns {Promise.<Object>}
  */
-const getRandomGifUrl = (tag, rating) => {
+const getRandomGifData = (tag, rating) => {
 	const url = `https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${tag}&rating=${rating}"`;
 	return new Promise((resolve, reject) => {
 		fetch(url).then((response) => {
 			response.json().then((data) => {
-				resolve(data.data.image_url);
+				resolve(data.data);
 			});
 		});
 	});
@@ -27,48 +28,41 @@ const getOptions = () => {
 };
 
 /**
- * @param {String} url
- * @returns {HTMLImageElement}
+ * @param {Object} data
+ * @returns {HTMLVideoElement}
  */
-const createImage = (url) => {
-	let img = document.createElement("img");
+const createVideo = (data) => {
+	const video = document.createElement("video");
 
-	img.src = url;
-	img.style.width = "auto";
-	img.style.maxHeight = "300px";
-	img.style.marginTop = "1em";
+	video.src = data.image_mp4_url;
+	video.poster = data.fixed_height_small_still_url;
+	video.autoplay = true;
+	video.loop = true;
+	video.style.width = "auto";
+	video.style.height = "200px";
+	video.style.marginTop = "1em";
 
-	return img;
+	return video;
 };
 
 /**
  * @param {HTMLElement} element
- * @returns {Promise<HTMLImageElement>}
+ * @returns {Promise.<HTMLVideoElement>}
  */
-const createImageFromGiphy = (element) => {
+const createVideoFromGiphy = (element) => {
 	return getOptions().then((options) => {
-		return getRandomGifUrl(options.tag, options.rating).then((url) => {
-			return createImage(url);
+		return getRandomGifData(options.tag, options.rating).then((data) => {
+			return createVideo(data);
 		});
 	});
 };
 
 /**
  * @param {HTMLElement} element
- * @returns {Promise<HTMLImageElement>}
+ * @returns {Promise.<HTMLVideoElement>}
  */
 const appendRandomGif = (element) => {
-	if(gifs.has(element)) {
-		const gif = gifs.get(element);
-
-		if(gif && gif.promise) {
-			Promise.reject(gif.promise);
-
-			delete gif.promise;
-		}
-	}
-
-	return createImageFromGiphy(element).then((image) => {
+	return createVideoFromGiphy(element).then((image) => {
 		let span = document.createElement("span");
 		span.dataset["giffy"] = "true";
 
@@ -85,22 +79,19 @@ const observer = new MutationObserver((mutations) => {
 	const elements = Array.prototype.slice.call(document.querySelectorAll(".TC"));
 
 	elements.forEach((element) => {
-		if(element.offsetParent === null) {
+		if (element.offsetParent === null) {
 			const image = element.querySelector("[data-giffy]");
 
-			if(image && gifs.has(element)) {
+			if (image && gifs.has(element)) {
 				image.remove();
 
 				gifs.delete(element);
 			}
 		}
 
-		if(!gifs.has(element)) {
-			const promise = appendRandomGif(element);
-
-			gifs.set(element, { promise });
-
-			promise.then((image) => {
+		if (!gifs.has(element)) {
+			gifs.set(element, null);
+			appendRandomGif(element).then((image) => {
 				gifs.set(element, { image });
 			});
 		}
