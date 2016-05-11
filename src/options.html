@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Catbox Zero Options</title>
+	</head>
+
+	<body>
+		<section>
+			<h3>Giphy settings</h3>
+
+			<div class="settings-row">
+				<label>
+					<span>Tag:</span>
+					<input id="tag" type="text" value="" />
+				</label>
+			</div>
+
+			<div class="settings-row">
+				<label>
+					<span>Rating:</span>
+
+					<select id="rating">
+						<option value="y">Y</option>
+						<option value="g">G</option>
+						<option value="pg">PG</option>
+						<option value="pg-13">PG-13</option>
+						<option value="r">R</option>
+					</select>
+				</label>
+			</div>
+		</section>
+
+		<div id="status"></div>
+		<button id="save">Save</button>
+
+		<script src="options.js"></script>
+	</body>
+</html>

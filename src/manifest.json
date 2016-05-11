@@ -1,0 +1,20 @@
+{
+	"manifest_version": 2,
+
+	"name": "Catbox Zero",
+	"description": "Reward yourself for your empty inbox with a fun cat GIF!",
+	"version": "0.0.1",
+	"permissions": ["storage"],
+
+	"content_scripts": [
+		{
+			"matches": ["https://mail.google.com/*"],
+			"js": ["script.js"]
+		}
+	],
+
+	"options_ui": {
+		"page": "options.html",
+		"chrome_style": true
+	}
+}
