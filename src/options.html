@@ -5,13 +5,13 @@
 	</head>
 
 	<body>
-		<section>
-			<h3>Giphy settings</h3>
+		<form>
+			<legend>Giphy settings</legend>
 
 			<div class="settings-row">
 				<label>
 					<span>Tag:</span>
-					<input id="tag" type="text" value="" />
+					<input id="tag" type="text" value="" autofocus />
 				</label>
 			</div>
 
@@ -28,10 +28,10 @@
 					</select>
 				</label>
 			</div>
-		</section>
 
-		<div id="status"></div>
-		<button id="save">Save</button>
+			<div id="status"></div>
+			<button type="submit">Save</button>
+		</form>
 
 		<script src="options.js"></script>
 	</body>
